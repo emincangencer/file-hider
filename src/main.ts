@@ -1,5 +1,6 @@
 import { VisibilityToggleCommand } from './commands/toggleVisibility';
 import { VisibilityToggleSetting } from './settings/hiddenToggle';
+import { SetDelaySetting } from './settings/setDelay';
 import { App, Plugin, PluginSettingTab, TFolder } from 'obsidian';
 import { ManageHiddenPaths } from './settings/manageHiddenPaths';
 import { changePathVisibility } from './utils';
@@ -7,6 +8,7 @@ import { changePathVisibility } from './utils';
 interface FileHiderSettings {
 	hidden: boolean;
 	hiddenList: string[];
+	delay: number;
 };
 
 
@@ -14,6 +16,7 @@ export default class FileHider extends Plugin {
 	settings: FileHiderSettings = {
 		hidden: true,
 		hiddenList: [],
+		delay: 500, //set the default delay to 500
 	};
 
 	style: CSSStyleSheet|null = null;
@@ -65,12 +68,12 @@ export default class FileHider extends Plugin {
 
 		this.app.workspace.onLayoutReady(() => 
 		{
-			// Timeout is used to delay until the file explorer is loaded. Delay of 0 works, but I set it to 200 just to be safe.
+			// Use the delay setting from the plugin's settings. Default is 500.
 			setTimeout(() => {
 				for (const path of this.settings.hiddenList) {
 					changePathVisibility(path, this.settings.hidden);
 				};
-			}, 200);
+			}, this.settings.delay);
 		});
 
 		new VisibilityToggleCommand(this);
@@ -126,5 +129,6 @@ class FileHiderSettingsTab extends PluginSettingTab {
 		container.empty();
 		VisibilityToggleSetting.create(this.plugin, container);
 		ManageHiddenPaths.create(this.plugin, container);
+		SetDelaySetting.create(this.plugin, container);
 	};
 };
